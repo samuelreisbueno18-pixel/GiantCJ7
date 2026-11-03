@@ -1,0 +1,29 @@
+name: Compilar GiantCJ
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar os arquivos do repositorio
+        uses: actions/checkout@v4
+
+      - name: Baixar o SDK do AML (cabecalhos)
+        run: |
+          git clone --depth 1 https://github.com/RusJJ/AndroidModLoader.git aml_sdk
+          cp -r aml_sdk/mod ./mod
+          cp -r aml_sdk/include ./include
+
+      - name: Compilar com o NDK do Android
+        run: |
+          NDK="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_HOME}"
+          "$NDK/ndk-build" NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=./Android.mk NDK_APPLICATION_MK=./Application.mk
+
+      - name: Guardar o libGiantCJ.so pronto
+        uses: actions/upload-artifact@v4
+        with:
+          name: libGiantCJ
+          path: libs/armeabi-v7a/libGiantCJ.so
